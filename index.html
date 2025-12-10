@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Money Counter with Savings, Invest, Tax, Bank & History</title>
+   <style>
+      :root {
+         --primary-green: #2e7d32;
+         --secondary-green: #81c784;
+         --background-white: #ffffff;
+         --button-green: #4caf50;
+         --button-hover: #388e3c;
+         --button-disabled: #a5d6a7;
+         --crypto-blue: #007bff;
+         /* New color for Government Projects */
+         --government-red: #b71c1c;
+         /* New bright green for title */
+         --bright-green: #64dd17;
+      }
+
+      body {
+         font-family: Arial, sans-serif;
+         background-color: var(--secondary-green);
+         display: flex;
+         justify-content: flex-start;
+         align-items: flex-start;
+         /* Adjusted body padding to accommodate the new 350px sidebar width */
+         padding: 50px 400px 50px 50px;
+         margin: 0;
+         gap: 40px;
+         flex-wrap: wrap;
+         position: relative;
+         /* Hide overflow on body to prevent double scrollbars if sidebar is visible */
+         overflow-x: hidden;
+      }
+
+      /* New style for the main title */
+      #main-title {
+         width: 100%;
+         text-align: center;
+         margin-bottom: 20px;
+         margin-top: 30px;
+         color: var(--bright-green);
+         font-size: 3em;
+         font-weight: 900;
+         text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+         /* Ensure title spans the top area */
+         position: absolute;
+         left: 50px;
+         right: 400px;
+         top: 0;
+      }
+
+      #time {
+         position: absolute;
+         top: 10px;
+         left: 10px;
+         font-weight: bold;
+         font-size: 20px;
+         color: var(--background-white);
+         border: 2px solid var(--background-white);
+         padding: 5px 12px;
+         border-radius: 10px;
+         background-color: rgba(46, 125, 50, 0.6);
+         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .container {
+         background-color: var(--background-white);
+         padding: 40px 60px;
+         border-radius: 15px;
+         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+         text-align: center;
+         min-width: 300px;
+      }
+
+      /* Specific style for Crypto Container */
+      .crypto-container {
+         background-color: #e0f7fa;
+         border: 2px solid var(--crypto-blue);
+         color: var(--crypto-blue);
+      }
+
+      .crypto-container h2 {
+         color: var(--crypto-blue);
+      }
+
+      .crypto-controls button {
+         background-color: var(--crypto-blue);
+         font-size: 13px !important;
+      }
+
+      .crypto-controls button:hover {
+         background-color: #0056b3;
+      }
+
+      /* Specific style for Government Projects Container */
+      .government-container {
+         background-color: #ffebee;
+         border: 2px solid var(--government-red);
+      }
+
+      .government-container h2 {
+         color: var(--government-red);
+      }
+
+      .government-container button {
+         background-color: var(--government-red);
+      }
+
+      .government-container button:hover {
+         background-color: #a01010;
+      }
+
+      h2 {
+         margin-bottom: 10px;
+         color: var(--primary-green);
+      }
+
+      #money,
+      #savings,
+      #invest,
+      #stock,
+      #business,
+      #air-business,
+      #international-business,
+      #eth-balance,
+      #btc-balance,
+      #usdt-balance {
+         /* Updated IDs for clarity */
+         color: var(--primary-green);
+         font-size: 1.5em;
+      }
+
+      .crypto-rate {
+         font-weight: bold;
+         color: var(--crypto-blue);
+      }
+
+      .controls {
+         margin-top: 20px;
+      }
+
+      .controls input {
+         padding: 5px 10px;
+         width: 120px;
+         margin-right: 10px;
+         border-radius: 5px;
+         border: 1px solid var(--primary-green);
+      }
+
+      .controls button {
+         padding: 6px 12px;
+         margin: 5px;
+         border: none;
+         border-radius: 5px;
+         background-color: var(--button-green);
+         color: var(--background-white);
+         cursor: pointer;
+         font-size: 14px;
+      }
+
+      .controls button:hover {
+         background-color: var(--button-hover);
+      }
+
+      .controls button:disabled {
+         background-color: var(--button-disabled);
+         cursor: not-allowed;
+      }
+
+      #error,
+      #gamble-message,
+      #savings-error,
+      #invest-error,
+      #tax-message,
+      #bank-message,
+      #bir-message,
+      #charity-message,
+      #stock-message,
+      #business-message,
+      #air-business-message,
+      #international-business-message,
+      #crypto-message,
+      #gov-message {
+         margin-top: 10px;
+         font-weight: bold;
+         min-height: 18px;
+      }
+
+      #error.error,
+      #savings-error.error,
+      #invest-error.error,
+      #stock-message.error,
+      #business-message.error,
+      #air-business-message.error,
+      #international-business-message.error,
+      #crypto-message.error,
+      #gov-message.error {
+         color: red;
+      }
+
+      #error:not(.error),
+      #gamble-message,
+      #tax-message,
+      #bank-message,
+      #bir-message,
+      #charity-message,
+      #stock-message:not(.error),
+      #business-message:not(.error),
+      #air-business-message:not(.error),
+      #international-business-message:not(.error),
+      #crypto-message:not(.error),
+      #gov-message:not(.error) {
+         color: var(--primary-green);
+      }
+
+      /* Transaction History Sidebar and Button */
+      #history-toggle-button {
+         position: fixed;
+         right: 10px;
+         top: 10px;
+         padding: 8px 15px;
+         border: none;
+         border-radius: 8px;
+         background-color: var(--primary-green);
+         color: var(--background-white);
+         cursor: pointer;
+         font-weight: bold;
+         z-index: 1002;
+         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      #history-toggle-button:hover {
+         background-color: var(--button-hover);
+      }
+
+      #history-sidebar {
+         position: fixed;
+         right: 10px;
+         top: 60px;
+         /* INCREASED WIDTH */
+         width: 350px;
+         /* INCREASED MAX HEIGHT */
+         max-height: 90vh;
+         overflow-y: auto;
+         background-color: var(--background-white);
+         border-radius: 15px;
+         padding: 20px;
+         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+         z-index: 1001;
+         transition: transform 0.3s ease-in-out;
+      }
+
+      .history-hidden {
+         transform: translateX(calc(100% + 10px));
+      }
+
+      #history-sidebar h2 {
+         margin-top: 0;
+         color: var(--primary-green);
+      }
+
+      #history-list {
+         list-style-type: none;
+         padding: 0;
+         margin: 0;
+         font-size: 14px;
+         color: var(--primary-green);
+      }
+
+      #history-list li {
+         margin-bottom: 8px;
+         border-bottom: 1px solid #ccc;
+         padding-bottom: 4px;
+      }
+
+      .separator {
+         width: 100%;
+         height: 0;
+         border: none;
+         margin: 20px 0;
+      }
+
+      /* New style for ledger window */
+      .ledger-window {
+         padding: 20px;
+         background-color: #ffebee;
+         border: 3px solid var(--government-red);
+         border-radius: 10px;
+         font-family: Arial, sans-serif;
+         display: flex;
+         flex-direction: column;
+         gap: 10px;
+      }
+
+      .ledger-window h2 {
+         color: var(--government-red);
+         margin-top: 0;
+         text-align: center;
+      }
+
+      .ledger-window #ledger-total-container {
+         text-align: center;
+         border: 1px solid var(--government-red);
+         padding: 10px;
+         background-color: #fce4e4;
+         border-radius: 5px;
+      }
+
+      .ledger-window #ledger-total {
+         font-size: 1.8em;
+         font-weight: bold;
+         color: var(--government-red);
+         margin: 5px 0;
+      }
+
+      .ledger-window #ledger-history {
+         max-height: 150px;
+         /* Limit history height in the popup */
+         overflow-y: auto;
+         padding: 5px 10px;
+         border: 1px solid #ccc;
+         background-color: var(--background-white);
+         border-radius: 5px;
+         font-size: 12px;
+      }
+
+      .ledger-window #ledger-history ul {
+         list-style-type: none;
+         padding: 0;
+         margin: 0;
+      }
+
+      .ledger-window #ledger-history li {
+         margin-bottom: 4px;
+         border-bottom: 1px dotted #eee;
+         padding-bottom: 2px;
+      }
+
+      .ledger-window .control-buttons {
+         display: flex;
+         justify-content: space-between;
+         margin-top: 10px;
+      }
+
+      .ledger-window button {
+         padding: 8px 15px;
+         color: white;
+         border: none;
+         border-radius: 5px;
+         cursor: pointer;
+      }
+
+      .ledger-window #exit-button {
+         background-color: var(--government-red);
+      }
+
+      .ledger-window #exit-button:hover {
+         background-color: #a01010;
+      }
+
+      .ledger-window #delete-history-button {
+         background-color: #ff9800;
+         /* Orange color for delete */
+      }
+
+      .ledger-window #delete-history-button:hover {
+         background-color: #e65100;
+      }
+   </style>
+</head>
+
+<body>
+   <h1 id="main-title">Money Idle Simulator</h1>
+   <div id="time"></div>
+
+   <div class="container government-container">
+      <h2>Government Projects</h2>
+      <div>Contribution Rate: 99% of Main Account Cash</div>
+      <div class="controls">
+         <button onclick="contributeGovernment()">Contribute 99%</button>
+         <button onclick="openLedger()">Ledger</button>
+      </div>
+      <div id="gov-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>BANK</h2>
+      <div>Payment: ¥150,000 + 40% Fee every 1 hour</div>
+      <div class="controls">
+         <button id="bank-button" onclick="payBank()">Pay Bank</button>
+      </div>
+      <div id="bank-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>BIR</h2>
+      <div>Payment: ¥3,000,000 + 40% Fee every 5 hours</div>
+      <div class="controls">
+         <button id="bir-button" onclick="payBIR()">Pay BIR</button>
+      </div>
+      <div id="bir-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Charity</h2>
+      <div>Donation Fee: 11%</div>
+      <div class="controls">
+         <input type="number" id="charity-amount" placeholder="Amount to Donate">
+         <button onclick="donateCharity()">Donate</button>
+      </div>
+      <div id="charity-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Main Account</h2>
+      <div>Money: ¥<span id="money">0</span></div>
+
+      <div class="controls">
+         <input type="number" id="cash-in-amount" placeholder="Custom Amount">
+         <button onclick="cashIn()">Cash In</button>
+      </div>
+      <hr class="separator">
+
+      <div class="controls">
+         <input type="number" id="amount" placeholder="Amount">
+         <button onclick="deposit()">Deposit to Savings</button>
+      </div>
+      <div id="error"></div>
+      <div id="gamble-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container crypto-container">
+      <h2>CRYPTOCURRENCY EXCHANGE (1 min cycle)</h2>
+
+      <div>ETH Balance: <span id="eth-balance">0.000000</span></div>
+      <div>Rate: 1 ETH = ¥<span id="eth-rate" class="crypto-rate">0</span></div>
+      <div class="controls crypto-controls">
+         <input type="number" id="eth-amount" placeholder="ETH Amount">
+         <button onclick="buyCrypto('eth')">Buy ETH</button>
+         <button onclick="sellCrypto('eth')">Sell ETH</button>
+      </div>
+      <hr class="separator">
+
+      <div>BTC Balance: <span id="btc-balance">0.000000</span></div>
+      <div>Rate: 1 BTC = ¥<span id="btc-rate" class="crypto-rate">0</span></div>
+      <div class="controls crypto-controls">
+         <input type="number" id="btc-amount" placeholder="BTC Amount">
+         <button onclick="buyCrypto('btc')">Buy BTC</button>
+         <button onclick="sellCrypto('btc')">Sell BTC</button>
+      </div>
+      <hr class="separator">
+
+      <div>USDT Balance: <span id="usdt-balance">0.000000</span></div>
+      <div>Rate: 1 USDT = ¥<span id="usdt-rate" class="crypto-rate">0</span></div>
+      <div class="controls crypto-controls">
+         <input type="number" id="usdt-amount" placeholder="USDT Amount">
+         <button onclick="buyCrypto('usdt')">Buy USDT</button>
+         <button onclick="sellCrypto('usdt')">Sell USDT</button>
+      </div>
+
+      <div id="crypto-message"></div>
+   </div>
+   <hr class="separator">
+   <div class="container">
+      <h2>Invest Account</h2>
+      <div>Money: ¥<span id="invest">0</span></div>
+      <div class="controls">
+         <input type="number" id="invest-amount" placeholder="Amount">
+         <button onclick="depositInvest()">Deposit</button>
+         <button onclick="withdrawInvest()">Withdraw</button>
+      </div>
+      <div id="invest-error"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Stock Account</h2>
+      <div>Money: ¥<span id="stock">0</span></div>
+      <div class="controls">
+         <input type="number" id="stock-amount" placeholder="Amount">
+         <button id="deposit-stock-button" onclick="depositStock()">Deposit (Lock)</button>
+         <button id="withdraw-stock-button" onclick="withdrawStock()" disabled>Withdraw (Unlock)</button>
+      </div>
+      <div id="stock-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Business</h2>
+      <div>Profit: 1-10% every 3m (4% Fee) - 20% Withholding Tax</div>
+      <div>Principal: ¥<span id="business">0</span></div>
+      <div class="controls">
+         <input type="number" id="business-amount" placeholder="Amount">
+         <button id="deposit-business-button" onclick="depositBusiness()">Deposit (4% Fee)</button>
+         <button id="withdraw-business-button" onclick="withdrawBusiness()">Withdraw</button>
+      </div>
+      <div id="business-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Air Business</h2>
+      <div>Min Deposit: ¥20,000. Profit: 5-13% every 3m (9% Fee) - 20% Withholding Tax</div>
+      <div>Principal: ¥<span id="air-business">0</span></div>
+      <div class="controls">
+         <input type="number" id="air-business-amount" placeholder="Amount (min 20,000)">
+         <button id="deposit-air-business-button" onclick="depositAirBusiness()">Deposit (9% Fee)</button>
+         <button id="withdraw-air-business-button" onclick="withdrawAirBusiness()">Withdraw</button>
+      </div>
+      <div id="air-business-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>International Business</h2>
+      <div>Min Deposit: ¥100,000. Profit: 20-30% every 6m (11% Fee) - 20% Withholding Tax</div>
+      <div>Principal: ¥<span id="international-business">0</span></div>
+      <div class="controls">
+         <input type="number" id="international-business-amount" placeholder="Amount (min 100,000)">
+         <button id="deposit-international-business-button" onclick="depositInternationalBusiness()">Deposit (11%
+            Fee)</button>
+         <button id="withdraw-international-business-button" onclick="withdrawInternationalBusiness()">Withdraw</button>
+      </div>
+      <div id="international-business-message"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Savings Account</h2>
+      <div>Money: ¥<span id="savings">0</span></div>
+      <div class="controls">
+         <input type="number" id="withdraw-amount" placeholder="Amount">
+         <button onclick="withdraw()">Withdraw</button>
+      </div>
+      <div id="savings-error"></div>
+   </div>
+   <hr class="separator">
+
+   <div class="container">
+      <h2>Tax Section</h2>
+      <div>Charge every 5 minutes: 80% of Main Account Cash</div>
+      <div class="controls">
+         <button id="tax-button" onclick="payTax()">Pay Tax</button>
+      </div>
+      <div id="tax-message"></div>
+   </div>
+   <hr class="separator">
+
+   <button id="history-toggle-button" onclick="toggleHistory()">Hide History</button>
+
+   <div id="history-sidebar" class="history-hidden">
+      <h2>Transaction History</h2>
+      <ul id="history-list"></ul>
+   </div>
+
+   <script>
+      // --- Custom Big Number Implementation (Crucial for Crypto Precision) ---
+      function Big(value) {
+         this.value = String(value);
+
+         this.plus = (other) => new Big(parseFloat(this.value) + parseFloat(other.value));
+         this.minus = (other) => new Big(parseFloat(this.value) - parseFloat(other.value));
+         this.times = (other) => new Big(parseFloat(this.value) * parseFloat(other.value));
+         this.div = (other) => new Big(parseFloat(this.value) / parseFloat(other.value));
+         this.toFixed = (digits) => parseFloat(this.value).toFixed(digits);
+         this.toNumber = () => parseFloat(this.value);
+         this.lt = (other) => parseFloat(this.value) < parseFloat(other.value);
+         this.gt = (other) => parseFloat(this.value) > parseFloat(other.value);
+         this.toString = () => this.value;
+      }
+
+      // --- Helper function for BigInt Display (JPY Currency) ---
+      function formatBigInt(num) {
+         if (typeof num === 'bigint') {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+         }
+         return num.toLocaleString();
+      }
+
+      // --- Helper function for Crypto Display (Number) ---
+      function formatCrypto(num) {
+         return num.toFixed(6);
+      }
+
+      // --- Helper function for Rate Display (Big object to JPY formatted string) ---
+      function formatRate(big) {
+         const numStr = big.toFixed(0);
+         return numStr.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      // --- DOM Elements ---
+      const moneyElement = document.getElementById('money');
+      const savingsElement = document.getElementById('savings');
+      const investElement = document.getElementById('invest');
+      const stockElement = document.getElementById('stock');
+      const businessElement = document.getElementById('business');
+      const airBusinessElement = document.getElementById('air-business');
+      const internationalBusinessElement = document.getElementById('international-business');
+
+      // Crypto Elements
+      const ethBalanceElement = document.getElementById('eth-balance');
+      const btcBalanceElement = document.getElementById('btc-balance');
+      const usdtBalanceElement = document.getElementById('usdt-balance');
+      const ethRateElement = document.getElementById('eth-rate');
+      const btcRateElement = document.getElementById('btc-rate');
+      const usdtRateElement = document.getElementById('usdt-rate');
+
+      const ethInput = document.getElementById('eth-amount');
+      const btcInput = document.getElementById('btc-amount');
+      const usdtInput = document.getElementById('usdt-amount');
+      const cryptoMessage = document.getElementById('crypto-message');
+
+      // Other DOM elements
+      const amountInput = document.getElementById('amount');
+      const withdrawInput = document.getElementById('withdraw-amount');
+      const investInput = document.getElementById('invest-amount');
+      const stockInput = document.getElementById('stock-amount');
+      const businessInput = document.getElementById('business-amount');
+      const airBusinessInput = document.getElementById('air-business-amount');
+      const internationalBusinessInput = document.getElementById('international-business-amount');
+      const cashInInput = document.getElementById('cash-in-amount');
+      const depositStockButton = document.getElementById('deposit-stock-button');
+      const withdrawStockButton = document.getElementById('withdraw-stock-button');
+      const depositBusinessButton = document.getElementById('deposit-business-button');
+      const withdrawBusinessButton = document.getElementById('withdraw-business-button');
+      const depositAirBusinessButton = document.getElementById('deposit-air-business-button');
+      const withdrawAirBusinessButton = document.getElementById('withdraw-air-business-button');
+      const depositInternationalBusinessButton = document.getElementById('deposit-international-business-button');
+      const withdrawInternationalBusinessButton = document.getElementById('withdraw-international-business-button');
+      const stockMessage = document.getElementById('stock-message');
+      const businessMessage = document.getElementById('business-message');
+      const airBusinessMessage = document.getElementById('air-business-message');
+      const internationalBusinessMessage = document.getElementById('international-business-message');
+      const errorElement = document.getElementById('error');
+      const gambleMessage = document.getElementById('gamble-message');
+      const savingsError = document.getElementById('savings-error');
+      const investError = document.getElementById('invest-error');
+      const taxButton = document.getElementById('tax-button');
+      const taxMessage = document.getElementById('tax-message');
+      const bankButton = document.getElementById('bank-button');
+      const bankMessage = document.getElementById('bank-message');
+      const birButton = document.getElementById('bir-button');
+      const birMessage = document.getElementById('bir-message');
+      const charityInput = document.getElementById('charity-amount');
+      const charityMessage = document.getElementById('charity-message');
+      const historyList = document.getElementById('history-list');
+      const historySidebar = document.getElementById('history-sidebar');
+      const historyToggleButton = document.getElementById('history-toggle-button');
+      const govMessage = document.getElementById('gov-message');
+      const body = document.body;
+
+      // --- BigInt Variables (JPY Currency) ---
+      let money = 0n;
+      let savings = 0n;
+      let invest = 0n;
+      let stock = 0n;
+      let business = 0n;
+      let airBusiness = 0n;
+      let internationalBusiness = 0n;
+      let governmentLedger = 0n; // Total cumulative contributions
+
+      // --- Crypto Variables (Standard Number for Decimal precision of *Balance*) ---
+      let ethBalance = 0;
+      let btcBalance = 0;
+      let usdtBalance = 0;
+
+      // --- Crypto Rates (Big Object for Price Precision) ---
+      let ethRate = new Big('880900');
+      let btcRate = new Big('1909334');
+      let usdtRate = new Big('13400');
+
+      // --- Crypto Volatility Constants ---
+      const CRYPTO_UPDATE_INTERVAL = 60000;
+      const MIN_PERCENT_CHANGE = 0.05;
+      const MAX_PERCENT_CHANGE = 0.10;
+      const MIN_YEN_FLOOR = new Big('10000');
+
+      // --- Time/Lock Variables (standard number) ---
+      let taxLockedUntil = 0;
+      let bankLockedUntil = 0;
+      let birLockedUntil = 0;
+      let stockLockedUntil = 0;
+      let isStockLocked = false;
+      let isBusinessLocked = false;
+      let isAirBusinessLocked = false;
+      let isInternationalBusinessLocked = false;
+      let internationalBusinessNextPayTime = 0;
+
+      // HISTORY Structure: [{entry: 'Timestamp - Description', type: 'type'}, ...]
+      let history = [];
+      let isHistoryVisible = true;
+      let ledgerWindow = null;
+
+      // --- Other Constants ---
+      const WITHHOLDING_TAX_RATE = 0.20;
+      const CHARITY_FEE_RATE = 0.11;
+      const STOCK_GROWTH_RATE = 5n;
+      const STOCK_LOCK_DURATION = 6 * 60 * 60 * 1000;
+
+      const BUSINESS_DEPOSIT_FEE = 0.04;
+      const BUSINESS_INTERVAL = 3 * 60 * 1000;
+      const BUSINESS_MIN_RATE = 0.01;
+      const BUSINESS_MAX_RATE = 0.10;
+
+      const AIR_BUSINESS_MIN_DEPOSIT = 20000n;
+      const AIR_BUSINESS_DEPOSIT_FEE = 0.09;
+      const AIR_BUSINESS_MIN_RATE = 0.05;
+      const AIR_BUSINESS_MAX_RATE = 0.13;
+
+      const INTERNATIONAL_BUSINESS_MIN_DEPOSIT = 100000n;
+      const INTERNATIONAL_BUSINESS_DEPOSIT_FEE = 0.11;
+      const INTERNATIONAL_BUSINESS_INTERVAL = 6 * 60 * 1000;
+      const INTERNATIONAL_BUSINESS_MIN_RATE = 0.20;
+      const INTERNATIONAL_BUSINESS_MAX_RATE = 0.30;
+
+      // --- Crypto Logic ---
+
+      function getCryptoData(currency) {
+         switch (currency.toLowerCase()) {
+            case 'eth':
+               return {
+                  rate: ethRate, balance: ethBalance,
+                  input: ethInput, balanceElement: ethBalanceElement,
+                  rateElement: ethRateElement, name: 'ETH',
+                  storageKey: 'ethBalance', rateKey: 'ethRate'
+               };
+            case 'btc':
+               return {
+                  rate: btcRate, balance: btcBalance,
+                  input: btcInput, balanceElement: btcBalanceElement,
+                  rateElement: btcRateElement, name: 'BTC',
+                  storageKey: 'btcBalance', rateKey: 'btcRate'
+               };
+            case 'usdt':
+               return {
+                  rate: usdtRate, balance: usdtBalance,
+                  input: usdtInput, balanceElement: usdtBalanceElement,
+                  rateElement: usdtRateElement, name: 'USDT',
+                  storageKey: 'usdtBalance', rateKey: 'usdtRate'
+               };
+            default:
+               return null;
+         }
+      }
+
+      function updateCryptoDisplay() {
+         ethBalanceElement.textContent = formatCrypto(ethBalance);
+         btcBalanceElement.textContent = formatCrypto(btcBalance);
+         usdtBalanceElement.textContent = formatCrypto(usdtBalance);
+
+         ethRateElement.textContent = formatRate(ethRate);
+         btcRateElement.textContent = formatRate(btcRate);
+         usdtRateElement.textContent = formatRate(usdtRate);
+      }
+
+      function applyPriceVolatility(currentRate) {
+         const changeAmount = (Math.random() * (MAX_PERCENT_CHANGE - MIN_PERCENT_CHANGE)) + MIN_PERCENT_CHANGE;
+         const direction = Math.random() < 0.5 ? 1 : -1;
+         const factor = new Big(1).plus(new Big(changeAmount * direction));
+
+         let potentialNewRate = currentRate.times(factor);
+
+         if (potentialNewRate.lt(MIN_YEN_FLOOR)) {
+            potentialNewRate = MIN_YEN_FLOOR;
+         }
+
+         if (potentialNewRate.lt(new Big('1'))) {
+            potentialNewRate = new Big('1');
+         }
+
+         return potentialNewRate;
+      }
+
+      function runPriceUpdate() {
+         let oldEthRate = ethRate.toNumber();
+         let oldBtcRate = btcRate.toNumber();
+         let oldUsdtRate = usdtRate.toNumber();
+
+         ethRate = applyPriceVolatility(ethRate);
+         btcRate = applyPriceVolatility(btcRate);
+         usdtRate = applyPriceVolatility(usdtRate);
+
+         const ethChange = ((ethRate.toNumber() - oldEthRate) / oldEthRate * 100).toFixed(2);
+         const btcChange = ((btcRate.toNumber() - oldBtcRate) / oldBtcRate * 100).toFixed(2);
+         const usdtChange = ((usdtRate.toNumber() - oldUsdtRate) / oldUsdtRate * 100).toFixed(2);
+
+         let historyEntry = 'Crypto Prices Updated: ';
+         historyEntry += `ETH ${ethChange}%`;
+         historyEntry += ` | BTC ${btcChange}%`;
+         historyEntry += ` | USDT ${usdtChange}%`;
+
+         addHistory(historyEntry, 'crypto');
+         updateCryptoDisplay();
+         saveProgress();
+      }
+
+      setInterval(runPriceUpdate, CRYPTO_UPDATE_INTERVAL);
+
+
+      function buyCrypto(currency) {
+         const data = getCryptoData(currency);
+         if (!data) return;
+
+         const cryptoToBuy = parseFloat(data.input.value);
+         if (isNaN(cryptoToBuy) || cryptoToBuy <= 0) {
+            cryptoMessage.textContent = `Please enter a valid ${data.name} amount to buy.`;
+            cryptoMessage.classList.add('error');
+            return;
+         }
+
+         const costJPYDecimal = data.rate.times(new Big(cryptoToBuy));
+         const costJPY = BigInt(Math.ceil(costJPYDecimal.toNumber()));
+
+         if (money < costJPY) {
+            cryptoMessage.textContent = `Insufficient funds! Need ¥${formatBigInt(costJPY)} to buy ${formatCrypto(cryptoToBuy)} ${data.name}.`;
+            cryptoMessage.classList.add('error');
+            return;
+         }
+
+         money -= costJPY;
+
+         if (currency.toLowerCase() === 'eth') ethBalance += cryptoToBuy;
+         else if (currency.toLowerCase() === 'btc') btcBalance += cryptoToBuy;
+         else if (currency.toLowerCase() === 'usdt') usdtBalance += cryptoToBuy;
+
+         moneyElement.textContent = formatBigInt(money);
+         updateCryptoDisplay();
+         data.input.value = '';
+
+         cryptoMessage.textContent = `Successfully bought ${formatCrypto(cryptoToBuy)} ${data.name} for ¥${formatBigInt(costJPY)}.`;
+         cryptoMessage.classList.remove('error');
+         addHistory(`Buy ${data.name}: +${formatCrypto(cryptoToBuy)} (-¥${formatBigInt(costJPY)})`, 'crypto');
+         saveProgress();
+      }
+
+      function sellCrypto(currency) {
+         const data = getCryptoData(currency);
+         if (!data) return;
+
+         const cryptoToSell = parseFloat(data.input.value);
+         if (isNaN(cryptoToSell) || cryptoToSell <= 0) {
+            cryptoMessage.textContent = `Please enter a valid ${data.name} amount to sell.`;
+            cryptoMessage.classList.add('error');
+            return;
+         }
+
+         if (data.balance < cryptoToSell) {
+            cryptoMessage.textContent = `Insufficient ${data.name} balance! You only have ${formatCrypto(data.balance)} ${data.name}.`;
+            cryptoMessage.classList.add('error');
+            return;
+         }
+
+         const valueJPYDecimal = data.rate.times(new Big(cryptoToSell));
+         const valueJPY = BigInt(Math.floor(valueJPYDecimal.toNumber()));
+
+         money += valueJPY;
+
+         if (currency.toLowerCase() === 'eth') ethBalance -= cryptoToSell;
+         else if (currency.toLowerCase() === 'btc') btcBalance -= cryptoToSell;
+         else if (currency.toLowerCase() === 'usdt') usdtBalance -= cryptoToSell;
+
+         if (currency.toLowerCase() === 'eth') ethBalance = parseFloat(ethBalance.toFixed(6));
+         else if (currency.toLowerCase() === 'btc') btcBalance = parseFloat(btcBalance.toFixed(6));
+         else if (currency.toLowerCase() === 'usdt') usdtBalance = parseFloat(usdtBalance.toFixed(6));
+
+         moneyElement.textContent = formatBigInt(money);
+         updateCryptoDisplay();
+         data.input.value = '';
+
+         cryptoMessage.textContent = `Successfully sold ${formatCrypto(cryptoToSell)} ${data.name} for ¥${formatBigInt(valueJPY)}.`;
+         cryptoMessage.classList.remove('error');
+         addHistory(`Sell ${data.name}: -${formatCrypto(cryptoToSell)} (+¥${formatBigInt(valueJPY)})`, 'crypto');
+         saveProgress();
+      }
+
+      // --- END Crypto Logic ---
+
+      // --- Load & Save Functions ---
+
+      function loadProgress() {
+         money = BigInt(localStorage.getItem('money') || 0);
+         savings = BigInt(localStorage.getItem('savings') || 0);
+         invest = BigInt(localStorage.getItem('invest') || 0);
+         stock = BigInt(localStorage.getItem('stock') || 0);
+         business = BigInt(localStorage.getItem('business') || 0);
+         airBusiness = BigInt(localStorage.getItem('airBusiness') || 0);
+         internationalBusiness = BigInt(localStorage.getItem('internationalBusiness') || 0);
+         governmentLedger = BigInt(localStorage.getItem('governmentLedger') || 0);
+
+         ethBalance = parseFloat(localStorage.getItem('ethBalance') || 0);
+         btcBalance = parseFloat(localStorage.getItem('btcBalance') || 0);
+         usdtBalance = parseFloat(localStorage.getItem('usdtBalance') || 0);
+
+         ethRate = new Big(localStorage.getItem('ethRate') || '880900');
+         btcRate = new Big(localStorage.getItem('btcRate') || '1909334');
+         usdtRate = new Big(localStorage.getItem('usdtRate') || '13400');
+
+         taxLockedUntil = parseInt(localStorage.getItem('taxLockedUntil')) || 0;
+         bankLockedUntil = parseInt(localStorage.getItem('bankLockedUntil')) || 0;
+         birLockedUntil = parseInt(localStorage.getItem('birLockedUntil')) || 0;
+         stockLockedUntil = parseInt(localStorage.getItem('stockLockedUntil')) || 0;
+         isStockLocked = localStorage.getItem('isStockLocked') === 'true';
+         isBusinessLocked = localStorage.getItem('isBusinessLocked') === 'true';
+         isAirBusinessLocked = localStorage.getItem('isAirBusinessLocked') === 'true';
+         isInternationalBusinessLocked = localStorage.getItem('isInternationalBusinessLocked') === 'true';
+         internationalBusinessNextPayTime = parseInt(localStorage.getItem('internationalBusinessNextPayTime')) || 0;
+
+         // Parse history, handling the new object structure and old string structure
+         const savedHistory = JSON.parse(localStorage.getItem('history') || '[]');
+         history = savedHistory.map(item => {
+            if (typeof item === 'string') {
+               // Convert old string format to new object format with default type 'general'
+               // Attempt to infer type from content if needed, otherwise use 'general'
+               if (item.includes('Gov. Project')) return { entry: item, type: 'government' };
+               return { entry: item, type: 'general' };
+            }
+            return item;
+         });
+
+
+         const savedVisibility = localStorage.getItem('isHistoryVisible');
+         isHistoryVisible = savedVisibility === 'false' ? false : true;
+
+         if (isHistoryVisible) {
+            historySidebar.classList.remove('history-hidden');
+            historyToggleButton.textContent = 'Hide History';
+         } else {
+            historySidebar.classList.add('history-hidden');
+            historyToggleButton.textContent = 'Show History';
+         }
+
+         moneyElement.textContent = formatBigInt(money);
+         savingsElement.textContent = formatBigInt(savings);
+         investElement.textContent = formatBigInt(invest);
+         stockElement.textContent = formatBigInt(stock);
+         businessElement.textContent = formatBigInt(business);
+         airBusinessElement.textContent = formatBigInt(airBusiness);
+         internationalBusinessElement.textContent = formatBigInt(internationalBusiness);
+
+         updateCryptoDisplay();
+
+         renderHistory();
+
+         if (isBusinessLocked) { depositBusinessButton.disabled = true; } else { depositBusinessButton.disabled = false; }
+         if (isAirBusinessLocked) { depositAirBusinessButton.disabled = true; airBusinessMessage.textContent = `Air Business is running on ¥${formatBigInt(airBusiness)}.`; } else { depositAirBusinessButton.disabled = false; }
+         if (isInternationalBusinessLocked) { depositInternationalBusinessButton.disabled = true; } else { depositInternationalBusinessButton.disabled = false; }
+         if (Date.now() < taxLockedUntil) { taxButton.disabled = true; setTimeout(unlockTax, taxLockedUntil - Date.now()); } else taxButton.disabled = false;
+         if (Date.now() < bankLockedUntil) { bankButton.disabled = true; setTimeout(unlockBank, bankLockedUntil - Date.now()); } else bankButton.disabled = false;
+         if (Date.now() < birLockedUntil) { birButton.disabled = true; setTimeout(unlockBIR, birLockedUntil - Date.now()); } else birButton.disabled = false;
+
+         updateStockUI();
+         checkInternationalBusinessGrowth();
+      }
+
+      function saveProgress() {
+         localStorage.setItem('money', money.toString());
+         localStorage.setItem('savings', savings.toString());
+         localStorage.setItem('invest', invest.toString());
+         localStorage.setItem('stock', stock.toString());
+         localStorage.setItem('business', business.toString());
+         localStorage.setItem('airBusiness', airBusiness.toString());
+         localStorage.setItem('internationalBusiness', internationalBusiness.toString());
+         localStorage.setItem('governmentLedger', governmentLedger.toString());
+
+         localStorage.setItem('ethBalance', ethBalance.toString());
+         localStorage.setItem('btcBalance', btcBalance.toString());
+         localStorage.setItem('usdtBalance', usdtBalance.toString());
+
+         localStorage.setItem('ethRate', ethRate.toString());
+         localStorage.setItem('btcRate', btcRate.toString());
+         localStorage.setItem('usdtRate', usdtRate.toString());
+
+         localStorage.setItem('taxLockedUntil', taxLockedUntil);
+         localStorage.setItem('bankLockedUntil', bankLockedUntil);
+         localStorage.setItem('birLockedUntil', birLockedUntil);
+         localStorage.setItem('stockLockedUntil', stockLockedUntil);
+         localStorage.setItem('isStockLocked', isStockLocked);
+         localStorage.setItem('isBusinessLocked', isBusinessLocked);
+         localStorage.setItem('isAirBusinessLocked', isAirBusinessLocked);
+         localStorage.setItem('isInternationalBusinessLocked', isInternationalBusinessLocked);
+         localStorage.setItem('internationalBusinessNextPayTime', internationalBusinessNextPayTime);
+         localStorage.setItem('history', JSON.stringify(history));
+         localStorage.setItem('isHistoryVisible', isHistoryVisible);
+      }
+
+      // --- Government Contribution Function ---
+      function contributeGovernment() {
+         govMessage.textContent = '';
+         govMessage.classList.remove('error');
+
+         if (money <= 0n) {
+            govMessage.textContent = 'Your Main Account is empty. Cannot contribute to Government Projects.';
+            govMessage.classList.add('error');
+            return;
+         }
+
+         // This calculates 99%
+         const amountToDeduct = (money - (money / 100n));
+
+         // Ensure we leave at least 1 unit of currency if money is > 0n
+         if (money > 0n && amountToDeduct === 0n) {
+            const deduction = money - 1n;
+            if (deduction > 0n) {
+               money -= deduction;
+               governmentLedger += deduction;
+               moneyElement.textContent = formatBigInt(money);
+               govMessage.textContent = `Contributed ¥${formatBigInt(deduction)} to Government Projects.`;
+               addHistory(`Gov. Project Contribution: -¥${formatBigInt(deduction)} (99% rule applied)`, 'government'); // ADDED TYPE
+               saveProgress();
+            } else {
+               govMessage.textContent = 'Minimum 1 unit must remain in the account.';
+               govMessage.classList.add('error');
+            }
+            return;
+         }
+
+         if (amountToDeduct <= 0n) {
+            govMessage.textContent = 'Minimum 1% must remain in the account.';
+            govMessage.classList.add('error');
+            return;
+         }
+
+         money -= amountToDeduct;
+         governmentLedger += amountToDeduct;
+         moneyElement.textContent = formatBigInt(money);
+
+         govMessage.textContent = `Contributed ¥${formatBigInt(amountToDeduct)} (99%) to Government Projects.`;
+
+         addHistory(`Gov. Project Contribution: -¥${formatBigInt(amountToDeduct)} (99%)`, 'government'); // ADDED TYPE
+         saveProgress();
+      }
+
+      // --- Government Ledger Function ---
+      function openLedger() {
+         const w = 550;
+         const h = 400;
+         const left = (screen.width / 2) - (w / 2);
+         const top = (screen.height / 2) - (h / 2);
+
+         // Check if window is already open
+         if (ledgerWindow && !ledgerWindow.closed) {
+            ledgerWindow.focus();
+            updateLedgerContent();
+            return;
+         }
+
+         // Use window.open with a blank URL first
+         ledgerWindow = window.open("", "GovernmentLedger", `width=${w},height=${h},top=${top},left=${left}`);
+
+         if (!ledgerWindow) {
+            govMessage.textContent = "Popup blocked! Please allow popups for this site.";
+            govMessage.classList.add('error');
+            return;
+         }
+
+         // Inject necessary opener functions into the new window's scope
+         ledgerWindow.opener.deleteGovernmentHistory = deleteGovernmentHistory;
+         ledgerWindow.opener.updateLedgerContent = updateLedgerContent;
+
+         // Initial content generation
+         const content = `
+              <style>
+                  .ledger-window {
+                      padding: 20px;
+                      background-color: #ffebee;
+                      border: 3px solid #b71c1c;
+                      border-radius: 10px;
+                      font-family: Arial, sans-serif;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                  }
+                  .ledger-window h2 {
+                      color: #b71c1c;
+                      margin-top: 0;
+                      text-align: center;
+                  }
+                  .ledger-window #ledger-total-container {
+                      text-align: center;
+                      border: 1px solid #b71c1c;
+                      padding: 10px;
+                      background-color: #fce4e4;
+                      border-radius: 5px;
+                  }
+                  .ledger-window #ledger-total {
+                      font-size: 1.8em;
+                      font-weight: bold;
+                      color: #b71c1c;
+                      margin: 5px 0;
+                  }
+                  .ledger-window #ledger-history {
+                      height: 150px; /* Fixed height for scrollable area */
+                      overflow-y: auto;
+                      padding: 5px 10px;
+                      border: 1px solid #ccc;
+                      background-color: white;
+                      border-radius: 5px;
+                      font-size: 12px;
+                  }
+                  .ledger-window #ledger-history ul {
+                      list-style-type: none;
+                      padding: 0;
+                      margin: 0;
+                  }
+                  .ledger-window #ledger-history li {
+                      margin-bottom: 4px;
+                      border-bottom: 1px dotted #eee;
+                      padding-bottom: 2px;
+                  }
+                  .ledger-window .control-buttons {
+                      display: flex;
+                      justify-content: space-between;
+                      margin-top: 10px;
+                  }
+                  .ledger-window button {
+                      padding: 8px 15px;
+                      color: white;
+                      border: none;
+                      border-radius: 5px;
+                      cursor: pointer;
+                  }
+                  .ledger-window #exit-button {
+                      background-color: #b71c1c;
+                  }
+                  .ledger-window #exit-button:hover {
+                      background-color: #a01010;
+                  }
+                  .ledger-window #delete-history-button {
+                      background-color: #ff9800;
+                  }
+                  .ledger-window #delete-history-button:hover {
+                      background-color: #e65100;
+                  }
+              </style>
+              <div class="ledger-window">
+                  <h2>Government Projects Ledger</h2>
+                  <div id="ledger-total-container">
+                      <div>Total Cumulative Contribution:</div>
+                      <div id="ledger-total">¥Loading...</div>
+                  </div>
+                  <h3>Transaction History</h3>
+                  <div id="ledger-history">
+                      <ul id="history-list-ledger"></ul>
+                  </div>
+                  <div class="control-buttons">
+                      <button id="delete-history-button" onclick="opener.deleteGovernmentHistory();">Delete History</button>
+                      <button id="exit-button" onclick="window.close()">Exit</button>
+                  </div>
+              </div>
+          `;
+
+         // Write content and update immediately
+         ledgerWindow.document.write(content);
+         ledgerWindow.document.close();
+         updateLedgerContent();
+
+         // Add a listener to automatically update content if the window is closed
+         ledgerWindow.onbeforeunload = () => { ledgerWindow = null; };
+      }
+
+      // Function to update content if window is already open (called before opening/on focus/after delete)
+      function updateLedgerContent() {
+         if (ledgerWindow && !ledgerWindow.closed) {
+            const totalElement = ledgerWindow.document.getElementById('ledger-total');
+            const historyListElement = ledgerWindow.document.getElementById('history-list-ledger');
+
+            if (totalElement) {
+               totalElement.textContent = `¥${formatBigInt(governmentLedger)}`;
+            }
+
+            if (historyListElement) {
+               historyListElement.innerHTML = '';
+               // Filter history entries that have the type 'government'
+               const govHistory = history.filter(item => item.type === 'government');
+
+               if (govHistory.length === 0) {
+                  const li = ledgerWindow.document.createElement('li');
+                  li.textContent = 'No government project contributions recorded.';
+                  historyListElement.appendChild(li);
+               } else {
+                  // Display history from newest to oldest
+                  // Must loop over the filtered array
+                  govHistory.forEach(item => {
+                     const li = ledgerWindow.document.createElement('li');
+                     li.textContent = item.entry;
+                     historyListElement.appendChild(li);
+                  });
+               }
+            }
+         }
+      }
+
+      // --- Delete Government History Function (UPDATED) ---
+      function deleteGovernmentHistory() {
+         // 1. Clear the history entries
+         const originalLength = history.length;
+         history = history.filter(item => item.type !== 'government');
+         const deletedCount = originalLength - history.length;
+
+         // 2. Reset the cumulative ledger amount
+         governmentLedger = 0n;
+
+         // 3. Update main UI and show message
+         if (deletedCount > 0) {
+            govMessage.textContent = `Successfully deleted ${deletedCount} Government Project history entries and reset the Ledger Total.`;
+            govMessage.classList.remove('error');
+         } else {
+            govMessage.textContent = `No Government Project history entries found to delete. Ledger Total reset to ¥0.`;
+            govMessage.classList.remove('error'); // Not an error, just an action feedback
+         }
+
+         renderHistory(); // Update the main sidebar
+         updateLedgerContent(); // Update the popup window
+         saveProgress();
+      }
+
+      // --- Cash In Feature (FIXED) ---
+      function cashIn() {
+         errorElement.textContent = '';
+         errorElement.classList.remove('error');
+
+         const inputString = cashInInput.value || '0';
+
+         if (inputString.startsWith('-') || isNaN(parseInt(inputString)) || parseInt(inputString) < 0) {
+            errorElement.textContent = 'Please enter a valid, positive amount to cash in.';
+            errorElement.classList.add('error');
+            return;
+         }
+
+         const value = BigInt(inputString);
+
+         if (value <= 0n) {
+            errorElement.textContent = 'Please enter a valid amount to cash in.';
+            errorElement.classList.add('error');
+            return;
+         }
+
+         money += value;
+         moneyElement.textContent = formatBigInt(money);
+
+         const successValue = formatBigInt(value);
+         cashInInput.value = '';
+
+         errorElement.textContent = `Cash In successful: +¥${successValue}`;
+
+         setTimeout(() => {
+            errorElement.textContent = '';
+         }, 2000);
+
+         addHistory(`Cash In: +¥${successValue}`, 'general');
+         saveProgress();
+      }
+      // --- END Cash In Feature ---
+
+      // --- International Business Functions (Robust Timestamp Logic) ---
+
+      function depositInternationalBusiness() {
+         const inputString = internationalBusinessInput.value || '0';
+         const depositValue = BigInt(inputString);
+
+         if (isInternationalBusinessLocked) {
+            internationalBusinessMessage.textContent = 'International Business is already running. Withdraw first to reinvest.';
+            internationalBusinessMessage.classList.add('error');
+            return;
+         }
+
+         if (depositValue < INTERNATIONAL_BUSINESS_MIN_DEPOSIT) {
+            internationalBusinessMessage.textContent = `Minimum deposit is ¥${formatBigInt(INTERNATIONAL_BUSINESS_MIN_DEPOSIT)}.`;
+            internationalBusinessMessage.classList.add('error');
+            return;
+         }
+
+         const fee = BigInt(Math.floor(Number(depositValue) * INTERNATIONAL_BUSINESS_DEPOSIT_FEE));
+         const totalDeduction = depositValue + fee;
+
+         if (money < totalDeduction) {
+            internationalBusinessMessage.textContent = `Insufficient funds! Need ¥${formatBigInt(totalDeduction)} (Principal + 11% Fee).`;
+            internationalBusinessMessage.classList.add('error');
+            return;
+         }
+
+         money -= totalDeduction;
+         internationalBusiness = depositValue;
+         isInternationalBusinessLocked = true;
+         internationalBusinessNextPayTime = Date.now() + INTERNATIONAL_BUSINESS_INTERVAL;
+
+         moneyElement.textContent = formatBigInt(money);
+         internationalBusinessElement.textContent = formatBigInt(internationalBusiness);
+         internationalBusinessInput.value = '';
+         internationalBusinessMessage.textContent = `Started! Next profit in 6m 0s.`;
+         internationalBusinessMessage.classList.remove('error');
+
+         depositInternationalBusinessButton.disabled = true;
+
+         addHistory(`Int. Business deposit: -¥${formatBigInt(totalDeduction)} (Principal: ¥${formatBigInt(depositValue)}, Fee: ¥${formatBigInt(fee)})`, 'business');
+         saveProgress();
+      }
+
+      function withdrawInternationalBusiness() {
+         if (!isInternationalBusinessLocked || internationalBusiness === 0n) {
+            internationalBusinessMessage.textContent = 'Nothing to withdraw. International Business is inactive.';
+            internationalBusinessMessage.classList.add('error');
+            return;
+         }
+
+         money += internationalBusiness;
+         const withdrawnAmount = internationalBusiness;
+         internationalBusiness = 0n;
+         isInternationalBusinessLocked = false;
+         internationalBusinessNextPayTime = 0;
+
+         moneyElement.textContent = formatBigInt(money);
+         internationalBusinessElement.textContent = formatBigInt(internationalBusiness);
+         internationalBusinessMessage.textContent = `Int. Business withdrawn: ¥${formatBigInt(withdrawnAmount)}. Account ready for new deposit.`;
+         internationalBusinessMessage.classList.remove('error');
+
+         depositInternationalBusinessButton.disabled = false;
+         addHistory(`Int. Business withdrawn: +¥${formatBigInt(withdrawnAmount)}.`, 'business');
+         saveProgress();
+      }
+
+      function checkInternationalBusinessGrowth() {
+         if (!isInternationalBusinessLocked || internationalBusiness === 0n) return;
+
+         const now = Date.now();
+
+         if (internationalBusinessNextPayTime > now) {
+            const remaining = internationalBusinessNextPayTime - now;
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            internationalBusinessMessage.textContent = `Active. Next profit in ${mins}m ${secs}s.`;
+         }
+
+         if (now >= internationalBusinessNextPayTime) {
+            const rate = INTERNATIONAL_BUSINESS_MIN_RATE + Math.random() * (INTERNATIONAL_BUSINESS_MAX_RATE - INTERNATIONAL_BUSINESS_MIN_RATE);
+            let profit = BigInt(Math.floor(Number(internationalBusiness) * rate));
+
+            const tax = BigInt(Math.floor(Number(profit) * WITHHOLDING_TAX_RATE));
+            const netProfit = profit - tax;
+
+            internationalBusiness += netProfit;
+
+            internationalBusinessElement.textContent = formatBigInt(internationalBusiness);
+            internationalBusinessMessage.textContent = `Profit: +¥${formatBigInt(netProfit)} (Taxed: ¥${formatBigInt(tax)}). Next in 6m.`;
+
+            internationalBusinessNextPayTime = now + INTERNATIONAL_BUSINESS_INTERVAL;
+
+            addHistory(`Int. Business growth: +¥${formatBigInt(netProfit)} (Rate: ${(rate * 100).toFixed(2)}%, Tax: ¥${formatBigInt(tax)})`, 'business');
+            saveProgress();
+         }
+      }
+
+      setInterval(checkInternationalBusinessGrowth, 1000);
+
+      // --- Air Business Functions ---
+
+      function depositAirBusiness() {
+         const inputString = airBusinessInput.value || '0';
+         const depositValue = BigInt(inputString);
+
+         if (isAirBusinessLocked) {
+            airBusinessMessage.textContent = 'Air Business is already running. Withdraw first to reinvest.';
+            airBusinessMessage.classList.add('error');
+            return;
+         }
+
+         if (depositValue < AIR_BUSINESS_MIN_DEPOSIT) {
+            airBusinessMessage.textContent = `Minimum deposit is ¥${formatBigInt(AIR_BUSINESS_MIN_DEPOSIT)}.`;
+            airBusinessMessage.classList.add('error');
+            return;
+         }
+
+         const fee = BigInt(Math.floor(Number(depositValue) * AIR_BUSINESS_DEPOSIT_FEE));
+         const totalDeduction = depositValue + fee;
+
+         if (money < totalDeduction) {
+            airBusinessMessage.textContent = `Insufficient funds! Need ¥${formatBigInt(totalDeduction)} (Principal + 9% Fee).`;
+            airBusinessMessage.classList.add('error');
+            return;
+         }
+
+         money -= totalDeduction;
+         airBusiness = depositValue;
+         isAirBusinessLocked = true;
+
+         moneyElement.textContent = formatBigInt(money);
+         airBusinessElement.textContent = formatBigInt(airBusiness);
+         airBusinessInput.value = '';
+         airBusinessMessage.textContent = `Air Business started with ¥${formatBigInt(depositValue)}. Fee paid: ¥${formatBigInt(fee)}.`;
+         airBusinessMessage.classList.remove('error');
+
+         depositAirBusinessButton.disabled = true;
+
+         addHistory(`Air Business deposit: -¥${formatBigInt(totalDeduction)} (Principal: ¥${formatBigInt(depositValue)}, Fee: ¥${formatBigInt(fee)})`, 'business');
+         saveProgress();
+      }
+
+      function withdrawAirBusiness() {
+         if (!isAirBusinessLocked || airBusiness === 0n) {
+            airBusinessMessage.textContent = 'Nothing to withdraw. Air Business is inactive.';
+            airBusinessMessage.classList.add('error');
+            return;
+         }
+
+         money += airBusiness;
+         const withdrawnAmount = airBusiness;
+         airBusiness = 0n;
+         isAirBusinessLocked = false;
+
+         moneyElement.textContent = formatBigInt(money);
+         airBusinessElement.textContent = formatBigInt(airBusiness);
+         airBusinessMessage.textContent = `Air Business withdrawn: ¥${formatBigInt(withdrawnAmount)}. Account ready for new deposit.`;
+         airBusinessMessage.classList.remove('error');
+
+         depositAirBusinessButton.disabled = false;
+         addHistory(`Air Business withdrawn: +¥${formatBigInt(withdrawnAmount)}.`, 'business');
+         saveProgress();
+      }
+
+      function runAirBusinessGrowth() {
+         if (!isAirBusinessLocked || airBusiness === 0n) return;
+
+         const rate = AIR_BUSINESS_MIN_RATE + Math.random() * (AIR_BUSINESS_MAX_RATE - AIR_BUSINESS_MIN_RATE);
+
+         let profit = BigInt(Math.floor(Number(airBusiness) * rate));
+
+         const tax = BigInt(Math.floor(Number(profit) * WITHHOLDING_TAX_RATE));
+         const netProfit = profit - tax;
+
+         airBusiness += netProfit;
+
+         airBusinessElement.textContent = formatBigInt(airBusiness);
+         airBusinessMessage.textContent = `Air Business profit: +¥${formatBigInt(netProfit)} (Taxed: ¥${formatBigInt(tax)}). Next profit in 3 minutes.`;
+
+         addHistory(`Air Business growth: +¥${formatBigInt(netProfit)} (Rate: ${(rate * 100).toFixed(2)}%, Tax: ¥${formatBigInt(tax)})`, 'business');
+         saveProgress();
+      }
+
+      setInterval(runAirBusinessGrowth, BUSINESS_INTERVAL);
+
+      // --- Business Functions ---
+
+      function depositBusiness() {
+         const inputString = businessInput.value || '0';
+         const depositValue = BigInt(inputString);
+
+         if (isBusinessLocked) {
+            businessMessage.textContent = 'Business is already running. Withdraw first to reinvest.';
+            businessMessage.classList.add('error');
+            return;
+         }
+
+         if (depositValue <= 0n) {
+            businessMessage.textContent = 'Please enter a valid deposit amount.';
+            businessMessage.classList.add('error');
+            return;
+         }
+
+         const fee = BigInt(Math.floor(Number(depositValue) * BUSINESS_DEPOSIT_FEE));
+         const totalDeduction = depositValue + fee;
+
+         if (money < totalDeduction) {
+            businessMessage.textContent = `Insufficient funds! Need ¥${formatBigInt(totalDeduction)} (Principal + 4% Fee).`;
+            businessMessage.classList.add('error');
+            return;
+         }
+
+         money -= totalDeduction;
+         business = depositValue;
+         isBusinessLocked = true;
+
+         moneyElement.textContent = formatBigInt(money);
+         businessElement.textContent = formatBigInt(business);
+         businessInput.value = '';
+         businessMessage.textContent = `Business started with ¥${formatBigInt(depositValue)}. Fee paid: ¥${formatBigInt(fee)}.`;
+         businessMessage.classList.remove('error');
+
+         depositBusinessButton.disabled = true;
+
+         addHistory(`Business deposit: -¥${formatBigInt(totalDeduction)} (Principal: ¥${formatBigInt(depositValue)}, Fee: ¥${formatBigInt(fee)})`, 'business');
+         saveProgress();
+      }
+
+      function withdrawBusiness() {
+         if (!isBusinessLocked || business === 0n) {
+            businessMessage.textContent = 'Nothing to withdraw. Business is inactive.';
+            businessMessage.classList.add('error');
+            return;
+         }
+
+         money += business;
+         const withdrawnAmount = business;
+         business = 0n;
+         isBusinessLocked = false;
+
+         moneyElement.textContent = formatBigInt(money);
+         businessElement.textContent = formatBigInt(business);
+         businessMessage.textContent = `Business withdrawn: ¥${formatBigInt(withdrawnAmount)}. Account ready for new deposit.`;
+         businessMessage.classList.remove('error');
+
+         depositBusinessButton.disabled = false;
+         addHistory(`Business withdrawn: +¥${formatBigInt(withdrawnAmount)}.`, 'business');
+         saveProgress();
+      }
+
+      function runBusinessGrowth() {
+         if (!isBusinessLocked || business === 0n) return;
+
+         const rate = BUSINESS_MIN_RATE + Math.random() * (BUSINESS_MAX_RATE - BUSINESS_MIN_RATE);
+
+         let profit = BigInt(Math.floor(Number(business) * rate));
+
+         const tax = BigInt(Math.floor(Number(profit) * WITHHOLDING_TAX_RATE));
+         const netProfit = profit - tax;
+
+         business += netProfit;
+
+         businessElement.textContent = formatBigInt(business);
+         businessMessage.textContent = `Business profit: +¥${formatBigInt(netProfit)} (Taxed: ¥${formatBigInt(tax)}). Next profit in 3 minutes.`;
+
+         addHistory(`Business growth: +¥${formatBigInt(netProfit)} (Rate: ${(rate * 100).toFixed(2)}%, Tax: ¥${formatBigInt(tax)})`, 'business');
+         saveProgress();
+      }
+
+      setInterval(runBusinessGrowth, BUSINESS_INTERVAL);
+
+      // --- Monetary Functions ---
+
+      function updateStockUI() {
+         stockElement.textContent = formatBigInt(stock);
+
+         if (stock > 0n && Date.now() < stockLockedUntil) {
+            const remaining = stockLockedUntil - Date.now();
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            stockMessage.textContent = `Locked. Ready in ${hours}h ${minutes}m for 5x growth.`;
+            depositStockButton.disabled = true;
+            withdrawStockButton.disabled = true;
+            stockMessage.classList.remove('error');
+         } else if (stock > 0n && Date.now() >= stockLockedUntil) {
+            if (!isStockLocked) {
+               stock = stock * STOCK_GROWTH_RATE;
+               stockElement.textContent = formatBigInt(stock);
+               isStockLocked = true;
+               addHistory(`Stock grew: x${STOCK_GROWTH_RATE}. Total: ¥${formatBigInt(stock)}`, 'stock');
+            }
+            stockMessage.textContent = `Ready! Withdraw ¥${formatBigInt(stock)} now.`;
+            depositStockButton.disabled = true;
+            withdrawStockButton.disabled = false;
+            stockMessage.classList.remove('error');
+         } else {
+            stockMessage.textContent = 'Ready for a new deposit.';
+            depositStockButton.disabled = false;
+            withdrawStockButton.disabled = true;
+            isStockLocked = false;
+            stockMessage.classList.remove('error');
+         }
+         saveProgress();
+      }
+
+      function depositStock() {
+         const inputString = stockInput.value || '0';
+         const value = BigInt(inputString);
+
+         if (isStockLocked) {
+            stockMessage.textContent = 'Account is currently locked/invested. You must withdraw first.';
+            stockMessage.classList.add('error');
+            return;
+         }
+
+         if (value <= 0n) {
+            stockMessage.textContent = 'Please enter a valid deposit amount.';
+            stockMessage.classList.add('error');
+            return;
+         }
+         if (value > money) {
+            stockMessage.textContent = 'Insufficient funds in Main Account!';
+            stockMessage.classList.add('error');
+            return;
+         }
+
+         money -= value;
+         stock = value;
+         stockLockedUntil = Date.now() + STOCK_LOCK_DURATION;
+
+         moneyElement.textContent = formatBigInt(money);
+         stockInput.value = '';
+         addHistory(`Stock deposited: -¥${formatBigInt(value)}. Locked for 6h.`, 'stock');
+
+         updateStockUI();
+      }
+
+      function withdrawStock() {
+         if (stock <= 0n) {
+            stockMessage.textContent = 'Stock account is empty.';
+            stockMessage.classList.add('error');
+            return;
+         }
+         if (Date.now() < stockLockedUntil) {
+            stockMessage.textContent = 'Cannot withdraw yet. Growth period not finished.';
+            stockMessage.classList.add('error');
+            return;
+         }
+
+         const withdrawalAmount = stock;
+         money += withdrawalAmount;
+         stock = 0n;
+         stockLockedUntil = 0;
+
+         moneyElement.textContent = formatBigInt(money);
+         addHistory(`Stock withdrawn: +¥${formatBigInt(withdrawalAmount)}. Account unlocked.`, 'stock');
+
+         updateStockUI();
+      }
+
+      setInterval(updateStockUI, 1000);
+
+      function toggleHistory() {
+         isHistoryVisible = !isHistoryVisible;
+         if (isHistoryVisible) {
+            historySidebar.classList.remove('history-hidden');
+            historyToggleButton.textContent = 'Hide History';
+         } else {
+            historySidebar.classList.add('history-hidden');
+            historyToggleButton.textContent = 'Show History';
+         }
+         localStorage.setItem('isHistoryVisible', isHistoryVisible);
+      }
+
+      function addHistory(entry, type = 'general') { // ADDED TYPE PARAMETER
+         const timestamp = new Date().toLocaleTimeString();
+         history.unshift({
+            entry: `${timestamp} - ${entry}`,
+            type: type
+         });
+         if (history.length > 50) history.pop();
+         renderHistory();
+         saveProgress();
+      }
+
+      function renderHistory() {
+         historyList.innerHTML = '';
+         // Render the entry property of the history objects
+         for (let item of history) {
+            const li = document.createElement('li');
+            li.textContent = item.entry;
+            historyList.appendChild(li);
+         }
+      }
+
+      const timeElement = document.getElementById('time');
+      function updateTime() {
+         const now = new Date();
+         const japanTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+         const hours = japanTime.getHours().toString().padStart(2, '0');
+         const minutes = japanTime.getMinutes().toString().padStart(2, '0');
+         const seconds = japanTime.getSeconds().toString().padStart(2, '0');
+         timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // Auto income and Invest growth
+      setInterval(() => {
+         money += 100n;
+         moneyElement.textContent = formatBigInt(money);
+         addHistory(`Auto income: +¥100`, 'general');
+      }, 4000);
+
+      setInterval(() => {
+         if (invest > 0n) {
+            const growth = BigInt(Math.floor(Number(invest) * 0.013));
+            invest += growth;
+            investElement.textContent = formatBigInt(invest);
+            addHistory(`Invest growth: +1.3%`, 'invest');
+         }
+      }, 30000);
+
+
+      function deposit() {
+         const inputString = amountInput.value || '0';
+         const value = BigInt(inputString);
+         if (value <= 0n) return;
+         if (value > money) {
+            errorElement.textContent = 'Insufficient funds!';
+            errorElement.classList.add('error');
+         } else {
+            money -= value;
+            savings += value;
+            moneyElement.textContent = formatBigInt(money);
+            savingsElement.textContent = formatBigInt(savings);
+            errorElement.textContent = '';
+            errorElement.classList.remove('error');
+            amountInput.value = '';
+            addHistory(`Deposited ¥${formatBigInt(value)} to Savings`, 'savings');
+            saveProgress();
+         }
+      }
+
+      function withdraw() {
+         const inputString = withdrawInput.value || '0';
+         const value = BigInt(inputString);
+         if (value <= 0n) return;
+         if (value > savings) {
+            savingsError.textContent = 'Insufficient funds!';
+            savingsError.classList.add('error');
+         } else {
+            savings -= value;
+            money += value;
+            savingsElement.textContent = formatBigInt(savings);
+            moneyElement.textContent = formatBigInt(money);
+            savingsError.textContent = '';
+            savingsError.classList.remove('error');
+            withdrawInput.value = '';
+            addHistory(`Withdrew ¥${formatBigInt(value)} from Savings`, 'savings');
+            saveProgress();
+         }
+      }
+
+      function depositInvest() {
+         const inputString = investInput.value || '0';
+         const value = BigInt(inputString);
+         if (value <= 0n) return;
+         if (value > money) {
+            investError.textContent = 'Insufficient funds!';
+            investError.classList.add('error');
+         } else {
+            money -= value;
+            invest += value;
+            moneyElement.textContent = formatBigInt(money);
+            investElement.textContent = formatBigInt(invest);
+            investError.textContent = '';
+            investError.classList.remove('error');
+            investInput.value = '';
+            addHistory(`Deposited ¥${formatBigInt(value)} to Invest`, 'invest');
+            saveProgress();
+         }
+      }
+
+      function withdrawInvest() {
+         const inputString = investInput.value || '0';
+         const value = BigInt(inputString);
+         if (value <= 0n) return;
+         if (value > invest) {
+            investError.textContent = 'Insufficient funds!';
+            investError.classList.add('error');
+         } else {
+            invest -= value;
+            money += value;
+            investElement.textContent = formatBigInt(invest);
+            moneyElement.textContent = formatBigInt(money);
+            investError.textContent = '';
+            investError.classList.remove('error');
+            investInput.value = '';
+            addHistory(`Withdrew ¥${formatBigInt(value)} from Invest`, 'invest');
+            saveProgress();
+         }
+      }
+
+      function payTax() {
+         const taxRate = 0.80;
+         const total = BigInt(Math.floor(Number(money) * taxRate));
+
+         if (money < total) {
+            taxMessage.textContent = `Not enough money! Need ¥${formatBigInt(total)}`;
+            taxMessage.classList.add('error');
+            return;
+         }
+
+         money -= total;
+         moneyElement.textContent = formatBigInt(money);
+         taxMessage.textContent = `Tax paid: ¥${formatBigInt(total)} (80% of cash). Next payment in 5 minutes.`;
+         taxMessage.classList.remove('error');
+         taxButton.disabled = true;
+         taxLockedUntil = Date.now() + 5 * 60 * 1000;
+         addHistory(`Tax paid (80%): -¥${formatBigInt(total)}`, 'tax');
+         saveProgress();
+
+         setTimeout(unlockTax, 5 * 60 * 1000);
+      }
+
+      function unlockTax() {
+         taxButton.disabled = false;
+         taxMessage.textContent = 'Tax payment available.';
+         taxMessage.classList.remove('error');
+         saveProgress();
+      }
+
+      function payBank() {
+         const bankAmount = 150000;
+         const feeRate = 0.40;
+         const fee = Math.floor(bankAmount * feeRate);
+         const total = BigInt(bankAmount + fee);
+
+         if (money < total) {
+            bankMessage.textContent = `Not enough money to pay bank! (¥${formatBigInt(total)})`;
+            bankMessage.classList.add('error');
+            return;
+         }
+
+         money -= total;
+         moneyElement.textContent = formatBigInt(money);
+         bankMessage.textContent = `Bank paid: ¥${formatBigInt(bankAmount)} (Base). Service Fee: ¥${formatBigInt(fee)}. Total: ¥${formatBigInt(total)}. Next payment in 1 hour.`;
+         bankMessage.classList.remove('error');
+         bankButton.disabled = true;
+         bankLockedUntil = Date.now() + 60 * 60 * 1000;
+         addHistory(`Bank payment: -¥${formatBigInt(total)} (Base: ¥150k, Fee: ¥${formatBigInt(fee)})`, 'bank');
+         saveProgress();
+
+         setTimeout(unlockBank, 60 * 60 * 1000);
+      }
+
+      function unlockBank() {
+         bankButton.disabled = false;
+         bankMessage.textContent = 'Bank payment available.';
+         bankMessage.classList.remove('error');
+         saveProgress();
+      }
+
+      function payBIR() {
+         const birAmount = 3000000;
+         const feeRate = 0.40;
+         const fee = Math.floor(birAmount * feeRate);
+         const total = BigInt(birAmount + fee);
+
+         if (money < total) {
+            birMessage.textContent = `Not enough money to pay BIR! (¥${formatBigInt(total)})`;
+            birMessage.classList.add('error');
+            return;
+         }
+
+         money -= total;
+         moneyElement.textContent = formatBigInt(money);
+         birMessage.textContent = `BIR paid: ¥${formatBigInt(birAmount)} (Base). Service Fee: ¥${formatBigInt(fee)}. Total: ¥${formatBigInt(total)}. Next payment in 5 hours.`;
+         birMessage.classList.remove('error');
+         birButton.disabled = true;
+         birLockedUntil = Date.now() + 5 * 60 * 60 * 1000;
+         addHistory(`BIR payment: -¥${formatBigInt(total)} (Base: ¥3M, Fee: ¥${formatBigInt(fee)})`, 'bir');
+         saveProgress();
+
+         setTimeout(unlockBIR, 5 * 60 * 60 * 1000);
+      }
+
+      function unlockBIR() {
+         birButton.disabled = false;
+         birMessage.textContent = 'BIR payment available.';
+         birMessage.classList.remove('error');
+         saveProgress();
+      }
+
+      function donateCharity() {
+         const inputString = charityInput.value || '0';
+         const donationAmount = BigInt(inputString);
+
+         if (donationAmount <= 0n) {
+            charityMessage.textContent = 'Please enter a valid amount to donate.';
+            charityMessage.classList.add('error');
+            return;
+         }
+
+         const fee = BigInt(Math.floor(Number(donationAmount) * CHARITY_FEE_RATE));
+         const totalDeduction = donationAmount + fee;
+
+         if (money < totalDeduction) {
+            charityMessage.textContent = `Insufficient funds! Need ¥${formatBigInt(totalDeduction)} (Donation + Fee).`;
+            charityMessage.classList.add('error');
+            return;
+         }
+
+         money -= totalDeduction;
+         moneyElement.textContent = formatBigInt(money);
+         charityMessage.textContent = `Donated ¥${formatBigInt(donationAmount)}. Fee paid: ¥${formatBigInt(fee)}.`;
+         charityMessage.classList.remove('error');
+
+         charityInput.value = '';
+
+         addHistory(`Charity: -¥${formatBigInt(totalDeduction)} (Donation: ¥${formatBigInt(donationAmount)}, Fee: ¥${formatBigInt(fee)})`, 'charity');
+         saveProgress();
+      }
+
+      // Initial loading
+      loadProgress();
+   </script>
+</body>
+
+</html>
